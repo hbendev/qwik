@@ -86,7 +86,7 @@ export const dispatch = async (root: Element | null, attrName: string, ev: any) 
     const qrls = ctx?.li.filter((li) => li[0] === attrName);
     if (qrls && qrls.length > 0) {
       for (const q of qrls) {
-        await q[1].getFn([elm, ev], () => elm.isConnected)(ev, elm);
+        await q[1].getFn(false, [elm, ev], () => elm.isConnected)(ev, elm);
       }
     }
     root = elm.parentElement;

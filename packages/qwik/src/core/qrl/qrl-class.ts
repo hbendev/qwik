@@ -9,6 +9,7 @@ import {
   type InvokeTuple,
   newInvokeContextFromTuple,
   tryGetInvokeContext,
+  asyncInvoke,
 } from '../use/use-core';
 import { maybeThen } from '../util/promises';
 import { qDev, qSerialize, qTest, seal } from '../util/qdev';
@@ -37,6 +38,7 @@ export interface QRLInternalMethods<TYPE> {
   getHash(): string;
   getCaptured(): any[] | null;
   getFn(
+    maybeAsync?: boolean,
     currentCtx?: InvokeContext | InvokeTuple,
     beforeFn?: () => void
   ): TYPE extends (...args: infer ARGS) => infer Return
@@ -69,7 +71,7 @@ export const createQRL = <TYPE>(
   let _containerEl: Element | undefined;
 
   const qrl = async function (this: any, ...args: any) {
-    const fn = invokeFn.call(this, tryGetInvokeContext());
+    const fn = invokeFn.call(this,false, tryGetInvokeContext());
     const result = await fn(...args);
     return result;
   } as unknown as QRLInternal<TYPE>;
@@ -104,6 +106,7 @@ export const createQRL = <TYPE>(
 
   function invokeFn(
     this: any,
+    maybeAsync?: boolean,
     currentCtx?: InvokeContext | InvokeTuple,
     beforeFn?: () => void | boolean
   ) {
@@ -124,6 +127,9 @@ export const createQRL = <TYPE>(
             context.$event$ = this;
           }
           emitUsedSymbol(symbol, context.$element$, start);
+          if (maybeAsync) {
+            return asyncInvoke.call(this, context, fn as any, ...args);
+          }
           return invoke.call(this, context, fn as any, ...args);
         }
         throw qError(QError_qrlIsNotFunction);

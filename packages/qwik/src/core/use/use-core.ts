@@ -8,9 +8,9 @@ import type { QwikElement } from '../render/dom/virtual-element';
 import type { RenderContext } from '../render/types';
 import { getContext, HOST_FLAG_DYNAMIC } from '../state/context';
 import { QContainerSelector, QLocaleAttr, RenderEvent } from '../util/markers';
-import { isPromise } from '../util/promises';
+import { isPromise, safeCall } from '../util/promises';
 import { seal } from '../util/qdev';
-import { isArray } from '../util/types';
+import { isArray, type ValueOrPromise } from '../util/types';
 import { setLocale } from './use-locale';
 import type { Subscriber } from '../state/common';
 import type { Signal } from '../state/signal';
@@ -106,6 +106,7 @@ export const useBindInvokeContext = <T extends ((...args: any[]) => any) | undef
     return invoke(ctx, callback.bind(undefined, ...args));
   }) as T;
 };
+
 export function invoke<ARGS extends any[] = any[], RET = any>(
   this: any,
   context: InvokeContext | undefined,
@@ -121,6 +122,26 @@ export function invoke<ARGS extends any[] = any[], RET = any>(
     _context = previousContext;
   }
   return returnValue;
+}
+
+export function asyncInvoke<ARGS extends any[] = any[], RET = any>(
+  this: any,
+  context: InvokeContext | undefined,
+  fn: (...args: ARGS) => RET,
+  ...args: ARGS
+): ValueOrPromise<RET> {
+  const previousContext = _context;
+  _context = context;
+  return safeCall(
+    () => fn.apply(this, args),
+    (value) => {
+      _context = previousContext;
+      return value;
+    },
+    (e) => {
+      throw e;
+    }
+  );
 }
 
 export const waitAndRun = (ctx: RenderInvokeContext, callback: () => any) => {

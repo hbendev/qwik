@@ -58,7 +58,7 @@ export const qwikLoader = (doc: Document, hasInitialized?: number) => {
     const qrls = ctx?.li.filter((li) => li[0] === attrName);
     if (qrls && qrls.length > 0) {
       for (const q of qrls) {
-        await q[1].getFn([element, ev], () => element.isConnected)(ev, element);
+        await q[1].getFn(false, [element, ev], () => element.isConnected)(ev, element);
       }
       return;
     }

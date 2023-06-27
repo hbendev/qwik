@@ -508,7 +508,7 @@ export const runResource = <T>(
   const iCtx = newInvokeContext(rCtx.$static$.$locale$, el, undefined, 'TaskEvent');
   const { $subsManager$: subsManager } = containerState;
   iCtx.$renderCtx$ = rCtx;
-  const taskFn = task.$qrl$.getFn(iCtx, () => {
+  const taskFn = task.$qrl$.getFn(true, iCtx, () => {
     subsManager.$clearSub$(task);
   });
 
@@ -637,7 +637,7 @@ export const runTask = (
   const iCtx = newInvokeContext(rCtx.$static$.$locale$, hostElement, undefined, 'TaskEvent');
   iCtx.$renderCtx$ = rCtx;
   const { $subsManager$: subsManager } = containerState;
-  const taskFn = task.$qrl$.getFn(iCtx, () => {
+  const taskFn = task.$qrl$.getFn(false, iCtx, () => {
     subsManager.$clearSub$(task);
   }) as TaskFn;
   const track: Tracker = (obj: any, prop?: string) => {
@@ -696,7 +696,7 @@ export const runComputed = (
   iCtx.$renderCtx$ = rCtx;
 
   const { $subsManager$: subsManager } = containerState;
-  const taskFn = task.$qrl$.getFn(iCtx, () => {
+  const taskFn = task.$qrl$.getFn(false, iCtx, () => {
     subsManager.$clearSub$(task);
   }) as ComputedFn<unknown>;
 
